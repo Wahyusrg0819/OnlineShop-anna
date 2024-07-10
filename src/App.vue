@@ -48,7 +48,7 @@ export default {
     // Example: Check user role or authentication status to set isAdmin
     // Replace this with your actual logic to determine if user is admin
     // For demonstration, let's assume true for admin
-    this.isAdmin = false;
+    this.isAdmin = true;
   }
 };
 </script>
