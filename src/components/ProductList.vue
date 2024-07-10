@@ -83,9 +83,24 @@ export default {
 </script>
 
 <style scoped>
-.product-card {
-  width: 250px;
+.q-card {
+  width: 250px; /* Sesuaikan lebar card sesuai kebutuhan */
+  height: auto; /* Atur ketinggian card agar dapat menampung konten */
+  overflow: hidden; /* Pastikan konten di dalam card tidak keluar */
+  border: 1px solid #ccc; /* Contoh: tambahkan border untuk lebih jelas */
+  border-radius: 8px; /* Contoh: atur border radius untuk membulatkan sudut card */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Contoh: tambahkan shadow untuk efek visual */
+  transition: box-shadow 0.3s ease; /* Contoh: tambahkan efek transisi untuk interaktivitas */
   cursor: pointer;
+}
+
+.q-card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6); /* Contoh: shadow berbeda saat card dihover */
+}
+
+.q-card-title {
+  font-size: 1.2em;
+  font-weight: 600;
 }
 
 .product-image {
@@ -99,8 +114,8 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* number of lines to show */
-  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1; /* Number of lines to show */
+  -webkit-box-orient: vertical; /* Ensure text stays in a vertical box */
 }
 
 .product-detail {
@@ -108,3 +123,4 @@ export default {
   color: #666;
 }
 </style>
+
