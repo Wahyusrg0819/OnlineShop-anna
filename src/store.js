@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { db } from './Firebase';
+import { db } from './firebase.js';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 
 export const useProductStore = defineStore('product', {
