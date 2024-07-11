@@ -1,7 +1,8 @@
-// Import the functions you need from the SDKs you need
+// src/firebase.js
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getAuth } from "firebase/auth";  // Tambahkan ini
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";  // Import Firestore
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -17,7 +18,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-const auth = getAuth(app);  // Tambahkan ini
+const auth = getAuth(app);
+const db = getFirestore(app);  // Initialize Firestore
 
-export { app, analytics, auth };  // Ekspor auth
-    
+export { app, analytics, auth, db };  // Export Firestore

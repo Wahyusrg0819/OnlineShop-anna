@@ -50,7 +50,7 @@ export default {
 <style scoped>
 .product-detail {
   padding: 20px;
-  text-align: center;
+  text-align:start; 
 }
 
 .product-image {

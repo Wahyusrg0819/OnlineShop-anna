@@ -36,8 +36,9 @@
 </template>
 
 <script>
-import { useProductStore } from '../store'
-import ProductDetail from './ProductDetail.vue'
+import { onMounted } from 'vue';
+import { useProductStore } from '../store';
+import ProductDetail from './ProductDetail.vue';
 
 export default {
   name: 'ProductList',
@@ -45,42 +46,50 @@ export default {
     ProductDetail
   },
   setup() {
-    const productStore = useProductStore()
-    return { productStore }
+    const productStore = useProductStore();
+
+    onMounted(() => {
+      productStore.fetchProducts(); // Fetch products when component mounts
+    });
+
+    return {
+      productStore
+    };
   },
   data() {
     return {
       showProductDetail: false,
       selectedProduct: null
-    }
+    };
   },
   computed: {
     products() {
-      return this.productStore.products
+      return this.productStore.products;
     }
   },
   methods: {
     openProductDetail(product) {
-      this.selectedProduct = product
-      this.showProductDetail = true
+      this.selectedProduct = product;
+      this.showProductDetail = true;
     },
     formattedPrice(price) {
       return new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR'
-      }).format(price)
+      }).format(price);
     },
     truncateDescription(description) {
-      const maxLength = 150
+      const maxLength = 150;
       if (description.length > maxLength) {
-        return description.substring(0, maxLength) + '...'
+        return description.substring(0, maxLength) + '...';
       } else {
-        return description
+        return description;
       }
     }
   }
-}
+};
 </script>
+
 
 <style scoped>
 .q-card {
