@@ -20,7 +20,7 @@
   import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../Firebase.js'; // Pastikan ini adalah jalur yang benar
+import { auth } from '../Firebase'; // Pastikan ini adalah jalur yang benar
 
 export default {
   name: 'Login',
