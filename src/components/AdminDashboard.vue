@@ -1,61 +1,111 @@
 <template>
-  <q-page padding>
-    <h1 class="text-h4 q-mb-md">Dashboard Admin</h1>
-
-    <q-card class="q-mb-md">
-      <q-card-section>
-        <q-form @submit.prevent="addProduct">
-          <div class="q-gutter-md">
-            <q-input v-model="newProduct.name" label="Nama Produk" outlined />
-            <q-input v-model="newProduct.description" label="Deskripsi Produk" outlined />
-            <q-input v-model="newProduct.price" label="Harga Produk" type="number" outlined />
-            <q-input v-model="newProduct.stock" label="Stok Produk" type="number" outlined />
-            <q-toggle v-model="useUrl" label="Gunakan URL untuk gambar?" />
-            <q-input v-if="useUrl" v-model="newProduct.image" label="URL Gambar Produk" outlined />
-            <q-uploader
-              v-else
-              label="Unggah Gambar Produk"
-              @added="onFileAdded"
-              :multiple="false"
-              :url="null"
-            />
-          </div>
-          <q-card-actions align="right">
-            <q-btn type="submit" color="primary">Tambah Produk</q-btn>
-          </q-card-actions>
-        </q-form>
-      </q-card-section>
-    </q-card>
-
-    <q-card v-for="product in products" :key="product.id" class="q-mb-md">
-      <q-card-section>
-        <div class="row no-wrap items-center">
-          <q-img :src="product.image" class="q-mr-md" style="width: 100px; height: 100px;" />
-          <div class="column">
-            <div class="text-subtitle1">{{ product.name }}</div>
-            <div class="text-body2">{{ product.description }}</div>
-            <div class="text-subtitle2 q-mt-sm">Harga: {{ product.price }}</div>
-            <div class="text-subtitle2 q-mt-sm">Stok: {{ product.stock }}</div>
-          </div>
-          <q-space />
-          <div class="column items-end">
-            <q-input v-model="product.stock" type="number" @blur="updateStock(product.id, product.stock)" />
-            <q-btn flat round icon="delete" @click="confirmDelete(product)" color="negative" />
-          </div>
-        </div>
-      </q-card-section>
-    </q-card>
-
-    <q-dialog v-model="showConfirmDelete" persistent>
-      <q-card>
-        <q-card-section class="row items-center">
-          <q-icon name="warning" color="orange" size="2em" class="q-mr-sm" />
-          <span>Apakah Anda yakin ingin menghapus produk ini?</span>
+  <q-page class="container">
+    <div class="row justify-center q-mt-xl">
+      <q-card class="col-xs-12 col-sm-10 col-md-8 col-lg-6 q-pa-md">
+        <q-card-section>
+          <div class="text-h6">Add New Product</div>
         </q-card-section>
+        <q-card-section>
+          <q-form @submit.prevent="addProduct">
+            <q-input v-model="newProduct.name" label="Product Name" outlined class="q-mb-md" />
+            <q-input v-model="newProduct.description" label="Description" type="textarea" autogrow outlined class="q-mb-md" />
+            <q-input v-model="newProduct.price" label="Price" type="number" outlined class="q-mb-md" />
+            <q-input v-model="newProduct.stock" label="Stock" type="number" outlined class="q-mb-md" />
 
+            <!-- Category Input -->
+            <q-input v-model="newProduct.category" label="Category" outlined class="q-mb-md" />
+
+            <!-- Color Input -->
+            <q-input v-model="newProduct.color" label="Color (optional)" outlined class="q-mb-md" />
+
+            <!-- Type Input -->
+            <q-input v-model="newProduct.type" label="Type (optional)" outlined class="q-mb-md" />
+
+            <q-toggle v-model="useUrl" label="Use Image URL" color="primary" class="q-mb-md" />
+            <q-input v-if="useUrl" v-model="imageUrl" label="Image URL" outlined class="q-mb-md" @blur="addImageUrl" />
+            <q-uploader v-else label="Upload Image" accept="image/*" @added="onFileAdded" />
+
+            <q-btn type="submit" label="Add Product" color="primary" class="full-width q-mt-md" />
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </div>
+
+    <div class="row justify-center q-mt-xl">
+      <q-card class="col-xs-12 col-sm-10 col-md-8 col-lg-6 q-pa-md">
+        <q-card-section>
+          <div class="text-h6">Product List</div>
+        </q-card-section>
+        <q-card-section>
+          <q-list bordered>
+            <q-item v-for="product in products" :key="product.id" clickable v-ripple @click="editProduct(product)">
+              <q-item-section>
+                <q-img v-if="product.images && product.images.length > 0" :src="product.images[0]" class="q-mr-md product-image" />
+                <q-item-label>{{ product.name }}</q-item-label>
+                <q-item-label caption>{{ product.description }}</q-item-label>
+                <q-item-label caption>Category: {{ product.category }}</q-item-label>
+                <q-item-label caption>Color: {{ product.color || 'N/A' }}</q-item-label>
+                <q-item-label caption>Type: {{ product.type || 'N/A' }}</q-item-label>
+                <q-item-label caption>Price: {{ product.price }}</q-item-label>
+                <q-item-label caption>Stock: {{ product.stock }}</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-btn dense flat icon="edit" @click.stop="editProduct(product)" />
+                <q-btn dense flat icon="delete" color="negative" @click.stop="confirmDelete(product)" />
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+      </q-card>
+    </div>
+
+    <!-- Edit Product Dialog -->
+    <q-dialog v-model="showEditDialog">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Edit Product</div>
+        </q-card-section>
+        <q-card-section>
+          <q-form @submit.prevent="updateProduct">
+            <q-input v-model="editProductData.name" label="Product Name" outlined class="q-mb-md" />
+            <q-input v-model="editProductData.description" label="Description" type="textarea" autogrow outlined class="q-mb-md" />
+            <q-input v-model="editProductData.price" label="Price" type="number" outlined class="q-mb-md" />
+            <q-input v-model="editProductData.stock" label="Stock" type="number" outlined class="q-mb-md" />
+
+            <!-- Edit Category Input -->
+            <q-input v-model="editProductData.category" label="Category" outlined class="q-mb-md" />
+
+            <!-- Edit Color Input -->
+            <q-input v-model="editProductData.color" label="Color (optional)" outlined class="q-mb-md" />
+
+            <!-- Edit Type Input -->
+            <q-input v-model="editProductData.type" label="Type (optional)" outlined class="q-mb-md" />
+
+            <q-toggle v-model="useEditUrl" label="Use Image URL" color="primary" class="q-mb-md" />
+            <q-input v-if="useEditUrl" v-model="editImageUrl" label="Image URL" outlined class="q-mb-md" @blur="addEditImageUrl" />
+            <q-uploader v-else label="Upload Image" accept="image/*" @added="onEditFileAdded" />
+
+            <q-btn type="submit" label="Update Product" color="primary" class="full-width q-mt-md" />
+          </q-form>
+        </q-card-section>
+        <q-card-actions>
+          <q-btn flat label="Cancel" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Confirm Delete Dialog -->
+    <q-dialog v-model="showConfirmDelete">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Confirm Delete</div>
+        </q-card-section>
+        <q-card-section>
+          Are you sure you want to delete this product?
+        </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat label="Batal" color="primary" v-close-popup />
-          <q-btn flat label="Hapus" color="negative" @click="deleteProduct" v-close-popup />
+          <q-btn flat label="Cancel" color="primary" v-close-popup />
+          <q-btn flat label="Delete" color="negative" @click="deleteProduct" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -63,43 +113,133 @@
 </template>
 
 <script>
-import { useProductStore } from '../store'
+import { db } from '../firebase.js';
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 
 export default {
-  name: 'AdminDashboard',
-  setup() {
-    const productStore = useProductStore();
-    productStore.fetchProducts(); // Fetch products when the component is created
-
-    return { productStore }
-  },
   data() {
     return {
+      products: [],
       newProduct: {
         name: '',
         description: '',
         price: '',
-        stock: 0,
-        image: ''
+        stock: '',
+        images: [],
+        category: '', // Menambahkan kategori
+        color: '', // Menambahkan warna
+        type: '' // Menambahkan tipe
       },
-      useUrl: true,
+      useUrl: false,
+      imageUrl: '',
+      // Existing data properties
+      editProductData: {
+        id: '',
+        name: '',
+        description: '',
+        price: '',
+        stock: '',
+        images: [],
+        category: '', // Menambahkan kategori
+        color: '', // Menambahkan warna
+        type: '' // Menambahkan tipe
+      },
+      useEditUrl: false,
+      editImageUrl: '',
+      showEditDialog: false,
+      productToDelete: null,
       showConfirmDelete: false,
-      productToDelete: null
-    }
-  },
-  computed: {
-    products() {
-      return this.productStore.products
-    }
+    };
   },
   methods: {
     async addProduct() {
-      if (this.newProduct.name && this.newProduct.description && this.newProduct.price && this.newProduct.stock >= 0 && (this.useUrl ? this.newProduct.image : true)) {
-        await this.productStore.addProduct({ ...this.newProduct });
-        this.newProduct = { name: '', description: '', price: '', stock: 0, image: '' };
-        this.useUrl = true; // reset useUrl toggle
-      } else {
-        alert('Semua field harus diisi!')
+      try {
+        if (!this.newProduct.name || !this.newProduct.description || !this.newProduct.price || !this.newProduct.stock || !this.newProduct.category) {
+          this.$q.notify({
+            type: 'negative',
+            message: 'Please fill out all required fields'
+          });
+          return;
+        }
+
+        const product = { ...this.newProduct, images: this.newProduct.images };
+        const docRef = await addDoc(collection(db, 'products'), product);
+        
+        this.products.push({ id: docRef.id, ...product });
+        this.newProduct = {
+          name: '',
+          description: '',
+          price: '',
+          stock: '',
+          images: [],
+          category: '',
+          color: '',
+          type: ''
+        };
+
+        this.$q.notify({
+          type: 'positive',
+          message: 'Product added successfully'
+        });
+      } catch (error) {
+        console.error('Failed to add product:', error);
+      }
+    },
+    addImageUrl() {
+      if (this.imageUrl) {
+        this.newProduct.images.push(this.imageUrl);
+      }
+    },
+    onFileAdded(files) {
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(files[0]);
+      fileReader.onload = () => {
+        this.newProduct.images.push(fileReader.result);
+      };
+    },
+    editProduct(product) {
+      this.editProductData = { ...product };
+      this.showEditDialog = true;
+    },
+    addEditImageUrl() {
+      if (this.editImageUrl) {
+        this.editProductData.images.push(this.editImageUrl);
+      }
+    },
+    onEditFileAdded(files) {
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(files[0]);
+      fileReader.onload = () => {
+        this.editProductData.images.push(fileReader.result);
+      };
+    },
+    async updateProduct() {
+      try {
+        const productDoc = doc(db, 'products', this.editProductData.id);
+        await updateDoc(productDoc, {
+          name: this.editProductData.name,
+          description: this.editProductData.description,
+          price: this.editProductData.price,
+          stock: this.editProductData.stock,
+          images: this.editProductData.images,
+          category: this.editProductData.category,
+          color: this.editProductData.color,
+          type: this.editProductData.type
+        });
+
+        const index = this.products.findIndex(p => p.id === this.editProductData.id);
+        if (index !== -1) {
+          this.products[index] = { ...this.editProductData };
+        }
+
+        this.$q.notify({
+          type: 'positive',
+          message: 'Product updated successfully'
+        });
+
+        this.showEditDialog = false;
+      } catch (error) {
+        console.error('Failed to update product:', error);
       }
     },
     confirmDelete(product) {
@@ -107,27 +247,47 @@ export default {
       this.showConfirmDelete = true;
     },
     async deleteProduct() {
-      if (this.productToDelete) {
-        await this.productStore.removeProduct(this.productToDelete.id);
-        this.productToDelete = null;
+      try {
+        await deleteDoc(doc(db, 'products', this.productToDelete.id));
+        this.products = this.products.filter(p => p.id !== this.productToDelete.id);
+        this.showConfirmDelete = false;
+
+        this.$q.notify({
+          type: 'positive',
+          message: 'Product deleted successfully'
+        });
+      } catch (error) {
+        console.error('Failed to delete product:', error);
       }
     },
-    async updateStock(productId, newStock) {
-      await this.productStore.updateProductStock(productId, newStock);
-    },
-    onFileAdded(files) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        this.newProduct.image = e.target.result;
-      };
-      reader.readAsDataURL(files[0]);
+    async fetchProducts() {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'products'));
+        const products = [];
+        querySnapshot.forEach((doc) => {
+          products.push({ id: doc.id, ...doc.data() });
+        });
+        this.products = products;
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      }
     }
+  },
+  mounted() {
+    this.fetchProducts();
   }
-}
+};
 </script>
 
 <style scoped>
-.q-card {
-  width: 100%;
+.product-image {
+  max-width: 50px;
+  max-height: 50px;
+  display: flex;
+  flex-direction: row;
+}
+
+.container {
+  padding: 20px;
 }
 </style>

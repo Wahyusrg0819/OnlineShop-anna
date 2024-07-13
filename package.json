@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@chenfengyuan/vue-carousel": "^2.0.0",
     "@quasar/extras": "^1.16.12",
     "firebase": "^10.12.3",
     "pinia": "^2.1.7",
