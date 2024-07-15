@@ -1,5 +1,5 @@
 <template>
-  <div class="">
+  <div class="list-product">
     <div class="row justify-around">
       <!-- Tampilkan loader jika data produk belum di-fetch -->
       <div v-if="isLoading" class="loading">
@@ -17,7 +17,6 @@
           <h3 class="title">{{ product.name }}</h3>
           <p class="product-description">{{ product.description }}</p>
           <p class="product-category">Category: {{ product.category }}</p>
-          <p class="product-color">Color: {{ product.color }}</p>
           <p class="product-type">Type: {{ product.type }}</p>
           <p class="product-detail">{{ formattedPrice(product.price) }}</p>
           
@@ -82,6 +81,10 @@ export default {
 </script>
 
 <style scoped>
+.list-product {
+  padding-left: 10%;
+  padding-right: 10%;
+}
 .q-card {
   display: flex;
   flex-direction: column;
@@ -97,12 +100,17 @@ export default {
 }
 
 /* Media query untuk menampilkan 2 kolom pada smartphone */
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .row {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
   }
+
+  .list-product {
+  padding-left: 0%;
+  padding-right: 0%;
+}
 
   .q-card {
     width: 100%;

@@ -1,5 +1,9 @@
 <template>
+  
+  <button @click="closeProductDetail"  class="close-button">✖</button>
+    
   <div class="product-detail">
+    
     <div class="product-image-container">
       <img
         :src="product.images[currentImageIndex]"
@@ -29,15 +33,58 @@
       <p class="product-price">Harga: {{ formatPrice(product.price) }}</p>
       <p class="product-stock">Stok: {{ product.stock }}</p>
       <p class="product-category">Kategori: {{ product.category }}</p>
-      <p class="product-color">Warna: {{ product.color }}</p>
       <p class="product-type">Tipe: {{ product.type }}</p>
     </div>
-    <div class="product-actions">
-      <q-btn color="primary" @click="addToCart">Tambah ke Keranjang</q-btn>
-      <q-btn color="secondary" @click="checkout([product])">Checkout</q-btn>
-      <q-btn color="secondary" :href="whatsappLink" target="_blank">Tanyakan di WhatsApp</q-btn>
+    <div class="select">
+      <q-select
+        v-model="selectedColor"
+        :options="product.colors"
+        label="Warna"
+        outlined
+        class="q-mb-md"
+      />
+      <q-input
+        v-model="quantity"
+        type="number"
+        label="Jumlah"
+        outlined
+        class="q-mb-md"
+        :min="1"
+        :max="product.stock"
+      />
     </div>
+    <div class="product-actions">
+      <q-btn style="background-color: #FF5722;" @click="addToCart" class="button">Tambah ke Keranjang</q-btn>
+      <q-btn style="background-color: #007BFF;" @click="handleCheckout" class="button">Checkout</q-btn>
+      <q-btn style="background-color: #25D366;" :href="whatsappLink" target="_blank" class="button">Tanyakan di WhatsApp</q-btn>
+    </div>
+
+    <!-- Confirmation Dialog for Checkout -->
+    <q-dialog v-model="showCheckoutConfirmation">
+      <q-card>
+        <q-card-section>
+          <p style="font-size: 20px; font-weight: 500">Apakah anda sudah memastikan ulang warna dan jumlah produk yang anda pilih?</p>
+        </q-card-section>
+        <q-card-actions class="confirm-checkout">
+          <q-btn label="Ya" @click="confirmCheckout" color="primary" />
+          <q-btn label="Tidak" @click="cancelCheckout"  color="secondary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Alert Dialog for Add to Cart -->
+    <q-dialog v-model="showAddToCartAlert">
+      <q-card>
+        <q-card-section>
+          <p>Produk ditambahkan ke keranjang!</p>
+        </q-card-section>
+        <q-card-actions>
+          <q-btn label="Tutup" @click="closeAddToCartAlert" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
+  
 </template>
 
 <script>
@@ -52,10 +99,15 @@ export default {
       required: true
     }
   },
-  setup(props) {
+  setup(props, { emit }) {
     const cartStore = useCartStore();
     const currentImageIndex = ref(0);
     const expandedDescription = ref(false);
+    const selectedColor = ref(props.product.colors[0] || ''); // Default to first color
+    const quantity = ref(1); // Default quantity
+    const hasAddedToCart = ref(false); // Track if item has been added to cart
+    const showCheckoutConfirmation = ref(false); // Confirmation for checkout
+    const showAddToCartAlert = ref(false); // Alert for add to cart
 
     const nextImage = () => {
       if (currentImageIndex.value < props.product.images.length - 1) {
@@ -84,14 +136,35 @@ export default {
     };
 
     const addToCart = () => {
-      cartStore.addToCart(props.product);
-      alert('Produk ditambahkan ke keranjang!');
+      cartStore.addToCart({
+        ...props.product,
+        selectedColor: selectedColor.value,
+        quantity: quantity.value
+      });
+      hasAddedToCart.value = true; // Set to true when added
+      showAddToCartAlert.value = true; // Show alert
     };
 
-    const checkout = (items) => {
-      const cartItems = items.map(product => `${product.name} (Harga: ${formatPrice(product.price)})`).join('\n');
-      const total = formattedTotal.value;
-      const message = `Halo, saya ingin membeli produk berikut:\n\n${cartItems}`;
+    const handleCheckout = () => {
+      if (!hasAddedToCart.value) {
+        showCheckoutConfirmation.value = true; // Show confirmation prompt
+      } else {
+        checkout();
+      }
+    };
+
+    const confirmCheckout = () => {
+      showCheckoutConfirmation.value = false; // Hide confirmation prompt
+      checkout();
+    };
+
+    const cancelCheckout = () => {
+      showCheckoutConfirmation.value = false; // Hide confirmation prompt
+    };
+
+    const checkout = () => {
+      const productDetails = `${props.product.name}\nTipe: ${props.product.type}\nKategori: ${props.product.category}\nWarna: ${selectedColor.value}\nJumlah: ${quantity.value}\nHarga: ${formatPrice(props.product.price * quantity.value)}`;
+      const message = `Halo, saya ingin membeli produk berikut:\n\n${productDetails}`;
       const whatsappLink = `https://wa.me/6285762786626?text=${encodeURIComponent(message)}`;
       window.open(whatsappLink, '_blank');
     };
@@ -103,16 +176,41 @@ export default {
       }).format(price);
     };
 
-    const formattedTotal = computed(() => {
-      return formatPrice(cartStore.totalPrice);
-    });
-
     const whatsappLink = `https://wa.me/6285762786626?text=Halo,%20saya%20ingin%20bertanya%20tentang%20${encodeURIComponent(props.product.name)}.`;
 
-    return { cartStore, currentImageIndex, nextImage, prevImage, addToCart, checkout, formatPrice, whatsappLink, truncatedDescription, expandedDescription, showToggleDescription, toggleDescription, formattedTotal };
+    const closeAddToCartAlert = () => {
+      showAddToCartAlert.value = false; // Hide alert
+    };
+
+    const closeProductDetail = () => {
+      emit('close');
+    };
+
+    return { 
+      currentImageIndex, 
+      nextImage, 
+      prevImage, 
+      addToCart, 
+      handleCheckout, 
+      confirmCheckout, 
+      cancelCheckout, 
+      closeAddToCartAlert, 
+      formatPrice, 
+      whatsappLink, 
+      truncatedDescription, 
+      expandedDescription, 
+      showToggleDescription, 
+      toggleDescription, 
+      selectedColor, 
+      quantity, 
+      showCheckoutConfirmation, 
+      showAddToCartAlert,
+      closeProductDetail
+    };
   }
 };
 </script>
+
 
 <style scoped>
 .product-detail {
@@ -124,6 +222,13 @@ export default {
   overflow-y: auto;
   max-height: 90vh;
   background-color: white;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
 }
 
 .product-image-container {
@@ -138,6 +243,10 @@ export default {
   object-fit: cover; /* Memastikan gambar tetap proporsional */
 }
 
+.confirm-checkout {
+  justify-content: center;
+  
+}
 .navigation {
   position: absolute;
   top: 50%;
@@ -217,14 +326,21 @@ h1 {
 
 .product-actions {
   display: flex;
-  justify-content: center;
+  justify-content: center;  
   gap: 10px;
-  margin-top: 20px;
-  position: sticky;
-  bottom: 0;
+  position:sticky;
   background: transparent;
-  width: 100%;
-  padding: 10px;
+  width: 80%;  
+}
+
+.select {
+  display: flex;
+  justify-content: left;
+  gap: 10px;
+}
+
+.button {
+  color: white;
 }
 
 /* Media query untuk menargetkan perangkat mobile */
@@ -236,6 +352,19 @@ h1 {
 
   .product-info {
     width: 100%;
+  }
+
+  .product-actions {
+    display: flex;
+    justify-content: center;
+    
+    position:sticky;
+    background: transparent;
+    width: 80%;  
+  }
+
+  .button {
+    font-size: 10px;
   }
 
   h1 {

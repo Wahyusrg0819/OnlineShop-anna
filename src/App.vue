@@ -80,7 +80,7 @@ export default {
 
 
 .header {
-  background-color: #77E4C8;
+  background-color: #37B7C3;
   color: white;
   padding: 15px;
   display: flex;
@@ -88,7 +88,7 @@ export default {
 }
 
 footer {
-  background-color: #77E4C8;
+  background-color: #37B7C3;
   color: white;
   padding: 15px;
   display: flex;
