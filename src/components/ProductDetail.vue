@@ -1,9 +1,7 @@
 <template>
+  <button @click="closeProductDetail" class="close-button">✖</button>
   
-  <button @click="closeProductDetail"  class="close-button">✖</button>
-    
   <div class="product-detail">
-    
     <div class="product-image-container">
       <img
         :src="product.images[currentImageIndex]"
@@ -42,6 +40,7 @@
         label="Warna"
         outlined
         class="q-mb-md"
+        style="text-align: center;"
       />
       <q-input
         v-model="quantity"
@@ -51,7 +50,9 @@
         class="q-mb-md"
         :min="1"
         :max="product.stock"
-      />
+        style="text-align: center;"
+    />
+
     </div>
     <div class="product-actions">
       <q-btn style="background-color: #FF5722;" @click="addToCart" class="button">Tambah ke Keranjang</q-btn>
@@ -84,7 +85,6 @@
       </q-card>
     </q-dialog>
   </div>
-  
 </template>
 
 <script>
@@ -136,14 +136,23 @@ export default {
     };
 
     const addToCart = () => {
-      cartStore.addToCart({
-        ...props.product,
-        selectedColor: selectedColor.value,
-        quantity: quantity.value
-      });
-      hasAddedToCart.value = true; // Set to true when added
-      showAddToCartAlert.value = true; // Show alert
-    };
+        console.log('Adding to cart:', {
+          ...props.product,
+          selectedColor: selectedColor.value,
+          quantity: quantity.value
+        });
+
+        cartStore.addToCart({
+          ...props.product,
+          selectedColor: selectedColor.value,
+          quantity: quantity.value
+        });
+        
+        hasAddedToCart.value = true; // Set to true when added
+        showAddToCartAlert.value = true; // Show alert
+      };
+
+
 
     const handleCheckout = () => {
       if (!hasAddedToCart.value) {
@@ -211,7 +220,6 @@ export default {
 };
 </script>
 
-
 <style scoped>
 .product-detail {
   padding: 20px;
@@ -222,6 +230,8 @@ export default {
   overflow-y: auto;
   max-height: 90vh;
   background-color: white;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .close-button {
@@ -234,19 +244,21 @@ export default {
 .product-image-container {
   position: relative;
   width: 100%;
+  max-width: 500px; /* Membatasi lebar maksimum container gambar */
+  
 }
 
 .product-image {
   width: 100%; /* Menyesuaikan lebar gambar sesuai dengan lebar layar */
   height: auto; /* Menjaga rasio gambar */
-  max-height: 500px; /* Membatasi tinggi maksimum gambar */
   object-fit: cover; /* Memastikan gambar tetap proporsional */
+  
 }
 
 .confirm-checkout {
   justify-content: center;
-  
 }
+
 .navigation {
   position: absolute;
   top: 50%;
@@ -284,104 +296,81 @@ export default {
 }
 
 .image-indicator .active {
-  background: black;
+  background: gray;
 }
 
 .product-info {
+  text-align: left;
   width: 100%;
-  max-width: 500px;
+  margin-top: 20px;
 }
 
-h1 {
-  font-size: 30px;
-  margin-top: 0px;
+.product-name {
+  font-size: 1.5em; /* Ukuran font yang lebih kecil untuk layar kecil */
   margin-bottom: 0px;
-  color: black;
 }
 
 .product-description {
-  line-height: 1.6;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3; /* Jumlah baris yang ditampilkan sebelum ada toggle */
-  -webkit-box-orient: vertical;
+  margin: 10px 0;
+  margin-top: 1px;
 }
 
 .product-description.expanded {
-  -webkit-line-clamp: unset; /* Hapus batasan baris jika deskripsi diperluas */
+  white-space: normal;
 }
 
 .toggle-link {
+  color: #007BFF;
   cursor: pointer;
-  color: blue;
 }
 
-.product-price,
-.product-stock {
-  margin-bottom: 10px;
-  font-size: 1.2rem;
+.product-price, .product-stock, .product-category, .product-type {
   font-weight: bold;
-}
-
-.product-actions {
-  display: flex;
-  justify-content: center;  
-  gap: 10px;
-  position:sticky;
-  background: transparent;
-  width: 80%;  
+  margin-top: 10px;
 }
 
 .select {
+  margin-top: 5px;
+  width: 100%;
   display: flex;
-  justify-content: left;
-  gap: 10px;
+  flex-direction: column;
+}
+
+.product-actions {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .button {
-  color: white;
+  width: 100%;
+  margin-bottom: 10px;
 }
 
-/* Media query untuk menargetkan perangkat mobile */
-@media (max-width: 600px) {
-  .product-image {
-    width: 100%; /* Mengisi lebar kontainer dengan gambar */
-    max-height: 500px; /* Tetapkan tinggi maksimum sesuai kebutuhan */
-  }
-
-  .product-info {
-    width: 100%;
+@media (min-width: 768px) {
+  .product-detail {
+    padding: 20px;
+    text-align: start;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+    max-height: 90vh;
+    background-color: white;
+    width: 80%; /* Atur lebar untuk layar yang lebih besar */
+    box-sizing: border-box;
   }
 
   .product-actions {
-    display: flex;
-    justify-content: center;
-    
-    position:sticky;
-    background: transparent;
-    width: 80%;  
+    flex-direction: row;
+    justify-content: space-between;
   }
 
   .button {
-    font-size: 10px;
-  }
-
-  h1 {
-    font-size: 24px;
-  }
-
-  .product-price,
-  .product-stock {
-    font-size: 1rem;
-  }
-
-  .product-description {
-    -webkit-line-clamp: 5; /* Tambahkan beberapa baris lagi sebelum ada toggle */
-  }
-
-  .product-description.expanded {
-    -webkit-line-clamp: unset; /* Hapus batasan baris jika deskripsi diperluas */
+    flex: 1;
+    margin: 0 10px;
   }
 }
 </style>
+

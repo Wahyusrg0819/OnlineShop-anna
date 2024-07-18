@@ -88,18 +88,35 @@ export const useCartStore = defineStore('cart', {
   state: () => ({
     cart: JSON.parse(localStorage.getItem('cart')) || []
   }),
+  getters: {
+    totalQuantity: (state) => {
+      return state.cart.reduce((total, item) => total + item.quantity, 0);
+    },
+    totalPrice: (state) => {
+      return state.cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    }
+  },
   actions: {
     addToCart(product) {
-      const found = this.cart.find(item => item.id === product.id);
+      const found = this.cart.find(item => item.id === product.id && item.selectedColor === product.selectedColor);
       if (found) {
-        found.quantity++;
+        found.quantity += product.quantity; // Tambahkan jumlah produk yang dipilih
       } else {
-        this.cart.push({ ...product, quantity: 1 });
+        this.cart.push({ ...product, quantity: product.quantity });
       }
       localStorage.setItem('cart', JSON.stringify(this.cart));
     },
     removeFromCart(productId) {
       this.cart = this.cart.filter(item => item.id !== productId);
+      localStorage.setItem('cart', JSON.stringify(this.cart));
+    },
+    updateCartQuantity(productId, quantity) {
+      const item = this.cart.find(item => item.id === productId);
+      if (item && quantity > 0) {
+        item.quantity = quantity;
+      } else if (item && quantity <= 0) {
+        this.cart = this.cart.filter(item => item.id !== productId);
+      }
       localStorage.setItem('cart', JSON.stringify(this.cart));
     },
     clearCart() {
@@ -108,3 +125,5 @@ export const useCartStore = defineStore('cart', {
     }
   }
 });
+
+
