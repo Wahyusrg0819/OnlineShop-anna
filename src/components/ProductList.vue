@@ -2,7 +2,7 @@
   <div class="list-product">
     <div class="row justify-around">
       <!-- Tampilkan loader jika data produk belum di-fetch -->
-      <div v-if="isLoading" class="loading">
+      <div v-if="isLoading" class="loading" id="load">
         <div class="circle"></div>
         <div class="circle"></div>
         <div class="circle"></div>
@@ -116,6 +116,15 @@ export default {
     width: 100%;
     border-radius: 0px;
   }
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-top: 3%;
+   }
 }
 
 /* Styles lainnya tetap sama */
@@ -164,7 +173,6 @@ export default {
   --dim: 3rem;
   width: var(--dim);
   height: var(--dim);
-  position: relative;
   animation: spin988 2s linear infinite;
   margin-top: 10%;
 }

@@ -91,7 +91,7 @@ export default {
       showCheckoutConfirmation.value = false;
       let message = 'Halo, saya ingin membeli produk berikut:\n\n';
       selectedItems.value.forEach((item, index) => {
-        message += `Product ${index + 1} :\nNama Produk: **${item.name}**\nTipe: ${item.type ?? '-'}\nKategori: ${item.category}\nWarna: ${item.selectedColor}\nJumlah: ${item.quantity}\n\n`;
+        message += `Product ${index + 1} :\nNama Produk: *${item.name}*\nTipe: ${item.type ?? '-'}\nKategori: ${item.category}\nWarna: ${item.selectedColor}\nJumlah: ${item.quantity}\n\n`;
       });
       const whatsappUrl = `https://wa.me/6285762786626?text=${encodeURIComponent(message)}`;
       window.location.href = whatsappUrl;
